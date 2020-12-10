@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,12 +44,16 @@ namespace IdentityServer.RestApis.Services.Impl
         {
 
             var scopeList = new List<string> { "openid", "profile"};
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var claims = roles.Select(role => new Claim("role", role));
             
             var token = await _tools.IssueClientJwtAsync(
                 clientId: "WebApis",
                 lifetime: 360000000,
                 audiences: new[] {"WebApis"},
-                scopes: scopeList
+                scopes: scopeList,
+                additionalClaims: claims
                 );
 
             return token;
